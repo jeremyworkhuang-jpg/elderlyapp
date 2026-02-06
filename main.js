@@ -7,6 +7,64 @@ const dashboardState = {
     ]
 };
 
+// Speech Recognition setup
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let speechRecognition = null;
+let speechRecognitionCallback = null; // To store the callback for current recognition session
+
+function initializeSpeechRecognition(callback) {
+    if (SpeechRecognition) {
+        if (!speechRecognition) { // Only create a new SpeechRecognition object if one doesn't exist
+            speechRecognition = new SpeechRecognition();
+            speechRecognition.continuous = false; // We want to stop after a single command
+            speechRecognition.interimResults = false;
+        }
+
+        speechRecognitionCallback = callback; // Store the provided callback
+
+        speechRecognition.onresult = (event) => {
+            const last = event.results.length - 1;
+            const command = event.results[last][0].transcript.trim();
+            speechRecognitionCallback(command);
+            stopSpeechRecognition(); // Stop after a result
+        };
+
+        speechRecognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            stopSpeechRecognition(); // Stop on error
+        };
+
+        speechRecognition.onend = () => {
+            console.log('Speech recognition service disconnected.');
+            // No automatic restart here, button will handle starting.
+        };
+    } else {
+        console.warn('Web Speech API not supported in this browser.');
+    }
+}
+
+function startSpeechRecognition() {
+    if (speechRecognition && speechRecognitionCallback) {
+        speechRecognition.lang = currentLanguage; // Ensure correct language is set
+        try {
+            speechRecognition.start();
+            console.log('Speech recognition started.');
+            return true;
+        } catch (e) {
+            console.error('Error starting speech recognition:', e);
+            return false;
+        }
+    }
+    return false;
+}
+
+function stopSpeechRecognition() {
+    if (speechRecognition) {
+        speechRecognition.stop();
+        console.log('Speech recognition stopped.');
+    }
+}
+
 const translations = {
     en: {
         appTitle: "Guardian Angel by Ailoveyou",
@@ -39,6 +97,8 @@ const translations = {
         exception: "Exception",
         needsAttention: "NEEDS ATTENTION",
         parentRequestedHelp: "Your parent has requested help.",
+        voiceCommand: "Voice Command",
+        listening: "Listening...",
         inspirationalQuotes: [
             { quote: "Live as if you were to die tomorrow. Learn as if you were to live forever.", author: "Mahatma Gandhi" },
             { quote: "The beautiful thing about learning is that nobody can take it away from you.", author: "B.B. King" },
@@ -83,6 +143,8 @@ const translations = {
         exception: "例外",
         needsAttention: "需要注意",
         parentRequestedHelp: "您的家长请求帮助。",
+        voiceCommand: "语音指令",
+        listening: "正在聆听...",
         inspirationalQuotes: [
             { quote: "活得好像明天就会死去。学得好像你会永远活着。", author: "圣雄甘地" },
             { quote: "学习的美妙之处在于没有人可以把它从你身边带走。", author: "B.B. King" },
@@ -126,6 +188,8 @@ const translations = {
         exception: "Pengecualian",
         needsAttention: "PERLUKAN PERHATIAN",
         parentRequestedHelp: "Ibu bapa anda telah meminta bantuan.",
+        voiceCommand: "Perintah Suara",
+        listening: "Mendengar...",
         inspirationalQuotes: [
             { quote: "Hiduplah seolah-olah anda akan mati esok. Belajarlah seolah-olah anda akan hidup selama-lamanya.", author: "Mahatma Gandhi" },
             { quote: "Perkara yang indah tentang belajar ialah tiada siapa yang boleh mengambilnya daripada anda.", author: "B.B. King" },
@@ -158,7 +222,7 @@ const translations = {
         whoToCall: "உதவிக்கு யாரை அழைப்பது:",
         police: "காவல்துறை:",
         ambulanceFire: "ஆம்புலன்ஸ் / தீயணைப்பு:",
-        activeAgeingCentre: "செயலில் વૃદ્ધాప్య மையம்:",
+        activeAgeingCentre: "செயலில் વૃદ્ધాపிய மையம்:",
         findCentre: "உங்களுக்கு அருகிலுள்ள மையத்தைக் கண்டறியவும்",
         aliveAndOkay: "உயிருடன் & நலமாக:",
         routine: "வழக்கம்:",
@@ -170,6 +234,8 @@ const translations = {
         exception: "விதிவிலக்கு",
         needsAttention: "கவனம் தேவை",
         parentRequestedHelp: "உங்கள் பெற்றோர் உதவி கோரியுள்ளனர்.",
+        voiceCommand: "குரல் கட்டளை",
+        listening: "கேட்கிறது...",
         inspirationalQuotes: [
             { quote: "நாளை இறந்துவிடுவீர்கள் என்பது போல் வாழுங்கள். என்றென்றும் வாழ்வீர்கள் என்பது போல் கற்றுக்கொள்ளுங்கள்.", author: "மகாத்மா காந்தி" },
             { quote: "கற்றலின் அழகான விஷயம் என்னவென்றால், அதை யாரும் உங்களிடமிருந்து பறிக்க முடியாது.", author: "பி.பி. கிங்" },
@@ -214,11 +280,13 @@ const translations = {
         exception: "अपवाद",
         needsAttention: "ध्यान देने की आवश्यकता है",
         parentRequestedHelp: "आपके माता-पिता ने मदद का अनुरोध किया है।",
+        voiceCommand: "वॉयस कमांड",
+        listening: "सुन रहा है...",
         inspirationalQuotes: [
             { quote: "ऐसे जियो जैसे कि तुम कल मरने वाले हो। ऐसे सीखो जैसे कि तुम हमेशा के लिए जीने वाले हो।", author: "महात्मा गांधी" },
             { quote: "सीखने के बारे में खूबसूरत बात यह है कि कोई भी इसे आपसे छीन नहीं सकता।", author: "बी.बी. किंग" },
             { quote: "जितना अधिक आप पढ़ेंगे, उतनी ही अधिक चीजें आप जानेंगे। जितना अधिक आप सीखेंगे, उतने ही अधिक स्थानों पर आप जाएंगे।", author: "डॉ. सीस" },
-            { quote: "स्व-शिक्षा ही, मेरा दृढ़ विश्वास है, एकमात्र प्रकार की शिक्षा है।", author: "आइजैक असिमोव" }
+            { quote: "स्व-शिक्षा ही, मेरा दृढ़ विश्वास है, एकमात्र प्रकार की शिक्षा है।", author: "आइज़ैक असिमोव" }
         ],
         caringQuotes: [
             { quote: "जिन लोगों ने कभी हमारी परवाह की, उनकी परवाह करना सर्वोच्च सम्मानों में से एक है।", author: "टिया वॉकर" },
@@ -248,6 +316,9 @@ function setLanguage(lang) {
         el.setAttribute('lang', lang);
     });
     renderDashboard();
+
+    // No automatic restart of speech recognition here, as it will be controlled by a button.
+    // speechRecognition.lang will be set when startSpeechRecognition is called.
 }
 
 // Debounce function to limit the rate of function execution
@@ -315,7 +386,7 @@ class DailyCheckin extends HTMLElement {
     }
 
     connectedCallback() {
-        this.render();
+        this.render(); // Initial render to set up the DOM
     }
 
     get lang() {
@@ -426,10 +497,35 @@ class DailyCheckin extends HTMLElement {
                     margin-left: 10px;
                     cursor: pointer;
                 }
+                #voice-command-btn {
+                    background: var(--dark-grey);
+                    box-shadow: 0 4px 15px rgba(160, 160, 160, 0.5);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                #voice-command-btn .icon {
+                    font-size: 1.8rem;
+                    margin-right: 10px;
+                }
+                #voice-command-btn.voice-active {
+                    background: linear-gradient(135deg, #ff9a8b, #ff6a88);
+                    box-shadow: 0 4px 15px rgba(255, 106, 136, 0.5);
+                    animation: pulse-voice 1.5s infinite;
+                }
+                @keyframes pulse-voice {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                    100% { transform: scale(1); }
+                }
             </style>
             <div class="button-grid">
                  <button id="checkin-btn">${this.trans.imOkayToday}</button>
                  <button id="escalation-btn">${this.trans.iNeedHelp}</button>
+                 <button id="voice-command-btn" class="voice-inactive">
+                    <span class="icon">🎙️</span> 
+                    <span class="text">${this.trans.voiceCommand}</span>
+                 </button>
             </div>
 
             <div id="checklist-container">
@@ -454,6 +550,49 @@ class DailyCheckin extends HTMLElement {
         const checklistForm = this.shadowRoot.querySelector('#checklist-form');
         const addTaskForm = this.shadowRoot.querySelector('#add-task-form');
         const emergencyContacts = this.shadowRoot.querySelector('#emergency-contacts');
+        const voiceCommandBtn = this.shadowRoot.querySelector('#voice-command-btn');
+
+        let isVoiceRecognitionActive = false;
+
+        // Initialize speech recognition with the callback to handle commands
+        initializeSpeechRecognition((command) => {
+            const lowerCaseCommand = command.toLowerCase();
+            const imOkayTodayText = this.trans.imOkayToday.toLowerCase();
+            const iNeedHelpText = this.trans.iNeedHelp.toLowerCase();
+
+            if (lowerCaseCommand.includes(imOkayTodayText)) {
+                if (checkinBtn && !checkinBtn.disabled) {
+                    checkinBtn.click();
+                    console.log('Voice command "I\'m Okay Today" activated.');
+                }
+            } else if (lowerCaseCommand.includes(iNeedHelpText)) {
+                if (escalationBtn && !escalationBtn.disabled) {
+                    escalationBtn.click();
+                    console.log('Voice command "I Need Help" activated.');
+                }
+            }
+            // Stop recognition after processing a command or if nothing was recognized
+            stopSpeechRecognition();
+            isVoiceRecognitionActive = false;
+            voiceCommandBtn.classList.remove('voice-active');
+            voiceCommandBtn.querySelector('.text').textContent = this.trans.voiceCommand;
+        });
+
+        voiceCommandBtn.addEventListener('click', () => {
+            if (isVoiceRecognitionActive) {
+                stopSpeechRecognition();
+                isVoiceRecognitionActive = false;
+                voiceCommandBtn.classList.remove('voice-active');
+                voiceCommandBtn.querySelector('.text').textContent = this.trans.voiceCommand;
+            } else {
+                const started = startSpeechRecognition();
+                if (started) {
+                    isVoiceRecognitionActive = true;
+                    voiceCommandBtn.classList.add('voice-active');
+                    voiceCommandBtn.querySelector('.text').textContent = this.trans.listening;
+                }
+            }
+        });
 
         checkinBtn.addEventListener('click', () => {
             dashboardState.status = 'checked-in';
