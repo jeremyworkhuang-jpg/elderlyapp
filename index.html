@@ -1,14 +1,33 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambient Reassurance</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="main.js" defer></script>
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+    <header>
+        <h1>Vibe Check</h1>
+    </header>
+    <main>
+        <section id="parent-view">
+            <h2>Parent Portal</h2>
+            <daily-checkin></daily-checkin>
+            <div id="inspirational-quote-container">
+                <inspirational-quote></inspirational-quote>
+            </div>
+        </section>
+        <section id="child-view">
+            <h2>Child Dashboard</h2>
+            <div id="dashboard-content">
+                <p>Loading dashboard...</p>
+            </div>
+            <div id="caring-quote-container">
+                <caring-quote></caring-quote>
+            </div>
+        </section>
+    </main>
 </body>
 </html>

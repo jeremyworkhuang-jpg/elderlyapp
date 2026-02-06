@@ -1,1 +1,123 @@
-/* Add styles here */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #50e3c2;
+    --danger-color: #e74c3c; /* Red for alerts */
+    --background-color: #f7f9fb;
+    --text-color: #333;
+    --light-grey: #f0f0f0;
+    --dark-grey: #a0a0a0;
+    --white: #fff;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --glow-color: rgba(74, 144, 226, 0.5);
+
+    --font-family: 'Helvetica Neue', sans-serif;
+    --hero-font-size: 3rem;
+    --headline-font-size: 2rem;
+    --sub-headline-font-size: 1.5rem;
+    --body-font-size: 1rem;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgdmlld0JveD0iMCAwIDIwIDIwIj48ZmlsdGVyIGlkPSJub2lzZSI+PGZlVHVyYnVsZW5jZSB0eXBlPSJmcmFjdGFsTm9pc2UiIGJhc2VGcmVxdWVuY3k9IjAuOCIgbnVtT2N0YXZlcz0iMyIgc3RpdGNoVGlsZXM9InN0aXRjaCIvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNub2lzZSkiIG9wYWNpdHk9IjAuMDUiLz48L3N2Zz4=');
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+h1 {
+    font-size: var(--hero-font-size);
+    color: var(--primary-color);
+    text-shadow: 2px 2px 4px var(--shadow-color);
+}
+
+main {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+@media (max-width: 800px) {
+    main {
+        grid-template-columns: 1fr;
+    }
+}
+
+section {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px -15px var(--shadow-color);
+}
+
+h2 {
+    font-size: var(--headline-font-size);
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--light-grey);
+    padding-bottom: 10px;
+}
+
+#dashboard-content ul {
+    list-style: none;
+    padding: 0;
+}
+
+#dashboard-content li {
+    background-color: var(--light-grey);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+}
+
+#inspirational-quote-container,
+#caring-quote-container {
+    margin-top: 30px;
+}
+
+
+/* Dashboard-specific styles */
+#dashboard-content {
+    font-size: var(--body-font-size);
+    line-height: 1.6;
+}
+
+.status-yes {
+    color: var(--secondary-color);
+    font-weight: bold;
+}
+
+.status-no {
+    color: var(--danger-color);
+    font-weight: bold;
+}
+
+.status-danger {
+    color: var(--danger-color);
+    font-size: var(--sub-headline-font-size);
+    font-weight: bold;
+    text-align: center;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.05);
+        opacity: 0.7;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
