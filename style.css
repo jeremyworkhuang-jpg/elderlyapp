@@ -29,29 +29,49 @@ body {
 header {
     text-align: center;
     margin-bottom: 40px;
+    padding: 60px 20px;
+    border-radius: 15px;
+    position: relative;
+    background-image: url('https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2');
+    background-size: cover;
+    background-position: center;
+    color: var(--white);
+}
+
+header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    z-index: 1;
 }
 
 .app-title {
+    position: relative;
+    z-index: 2;
     font-size: var(--hero-font-size);
     text-align: center;
-    margin-bottom: 20px;
+    margin: 0;
 }
 
 .main-title {
     display: block;
     font-weight: bold;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 2px 2px 8px var(--shadow-color);
+    color: var(--white);
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
 }
 
 .subtitle {
     display: block;
     font-size: 1.2rem;
-    color: var(--dark-grey);
-    margin-top: -10px;
+    color: var(--light-grey);
+    margin-top: 5px;
     font-style: italic;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.7);
 }
 
 main {
