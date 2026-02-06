@@ -7,8 +7,20 @@ const dashboardState = {
     ]
 };
 
+// Debounce function to limit the rate of function execution
+function debounce(func, delay) {
+    let timeout;
+    return function(...args) {
+        const context = this;
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(context, args), delay);
+    };
+}
+
 function renderDashboard() {
     const dashboard = document.getElementById('dashboard-content');
+    if (!dashboard) return;
+
     let content = '';
 
     switch (dashboardState.status) {
@@ -16,6 +28,7 @@ function renderDashboard() {
             content = `
                 <p class="status-danger">NEEDS ATTENTION</p>
                 <p>Your parent has requested help.</p>
+                <emergency-contacts></emergency-contacts>
             `;
             break;
         case 'checked-in':
@@ -44,14 +57,29 @@ class DailyCheckin extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+        this.render = debounce(this.render.bind(this), 50);
+    }
 
-        const template = document.createElement('template');
-        template.innerHTML = `
+    connectedCallback() {
+        this.render();
+        this.addEventListeners();
+    }
+
+    render() {
+        const checklistHtml = dashboardState.checklist.map((item, index) => `
+            <label for="task-${index}" class="checklist-item">
+                <input type="checkbox" id="task-${index}" data-index="${index}" ${item.completed ? 'checked' : ''}>
+                <span>${item.task}</span>
+                <button class="delete-btn" data-index="${index}">&times;</button>
+            </label>
+        `).join('');
+
+        this.shadowRoot.innerHTML = `
             <style>
                 :host {
                     display: block;
                 }
-                 .button-grid {
+                .button-grid {
                     display: grid;
                     grid-template-columns: 1fr;
                     gap: 15px;
@@ -75,7 +103,7 @@ class DailyCheckin extends HTMLElement {
                     background-color: var(--danger-color, #e74c3c);
                     box-shadow: 0 4px 15px rgba(231, 76, 60, 0.5);
                 }
-                 #submit-checklist-btn {
+                #submit-checklist-btn {
                     background-color: var(--primary-color, #4a90e2);
                     margin-top: 1rem; 
                 }
@@ -97,38 +125,74 @@ class DailyCheckin extends HTMLElement {
                     margin-bottom: 10px;
                     font-size: 1.1rem;
                 }
-                 .checklist-item input {
+                .checklist-item input[type="checkbox"] {
                     width: 20px; 
                     height: 20px;
                     margin-right: 15px;
                 }
-
+                .checklist-item span {
+                    flex-grow: 1;
+                }
+                .delete-btn {
+                    background: var(--danger-color, #e74c3c);
+                    color: white;
+                    border: none;
+                    border-radius: 50%;
+                    width: 30px;
+                    height: 30px;
+                    font-size: 1rem;
+                    line-height: 30px;
+                    text-align: center;
+                    cursor: pointer;
+                    padding: 0;
+                }
+                #add-task-form {
+                    display: flex;
+                    margin-top: 20px;
+                }
+                #new-task-input {
+                    flex-grow: 1;
+                    padding: 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                }
+                #add-task-btn {
+                    background: var(--primary-color, #4a90e2);
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    padding: 10px 15px;
+                    margin-left: 10px;
+                    cursor: pointer;
+                }
             </style>
             <div class="button-grid">
                  <button id="checkin-btn">I'm Okay Today</button>
                  <button id="escalation-btn">I Need Help</button>
             </div>
 
-            <form id="checklist-form">
+            <div id="checklist-container">
                 <h3>Daily Self-Care</h3>
-                ${dashboardState.checklist.map((item, index) => `
-                    <label for="task-${index}" class="checklist-item">
-                        <input type="checkbox" id="task-${index}" name="${item.task}">
-                        <span>${item.task}</span>
-                    </label>
-                `).join('')}
-                <button type="submit" id="submit-checklist-btn">Submit Tasks</button>
-            </form>
+                <form id="checklist-form">
+                    ${checklistHtml}
+                    <button type="submit" id="submit-checklist-btn">Submit Tasks</button>
+                </form>
+                <form id="add-task-form">
+                    <input type="text" id="new-task-input" placeholder="Add a new task..." required>
+                    <button type="submit" id="add-task-btn">Add</button>
+                </form>
+            </div>
+            <emergency-contacts id="emergency-contacts" style="display: none;"></emergency-contacts>
         `;
-
-        this.shadowRoot.appendChild(template.content.cloneNode(true));
+        this.addEventListeners();
     }
 
-    connectedCallback() {
+    addEventListeners() {
         const checkinBtn = this.shadowRoot.querySelector('#checkin-btn');
         const escalationBtn = this.shadowRoot.querySelector('#escalation-btn');
         const checklistForm = this.shadowRoot.querySelector('#checklist-form');
-        const submitBtn = this.shadowRoot.querySelector('#submit-checklist-btn');
+        const addTaskForm = this.shadowRoot.querySelector('#add-task-form');
+        const emergencyContacts = this.shadowRoot.querySelector('#emergency-contacts');
 
         checkinBtn.addEventListener('click', () => {
             dashboardState.status = 'checked-in';
@@ -143,7 +207,8 @@ class DailyCheckin extends HTMLElement {
             escalationBtn.textContent = 'Help Signal Sent';
             checkinBtn.disabled = true;
             escalationBtn.disabled = true;
-            submitBtn.disabled = true;
+            this.shadowRoot.querySelector('#submit-checklist-btn').disabled = true;
+            emergencyContacts.style.display = 'block';
             renderDashboard();
         });
 
@@ -153,14 +218,55 @@ class DailyCheckin extends HTMLElement {
             checkboxes.forEach((checkbox, index) => {
                 dashboardState.checklist[index].completed = checkbox.checked;
             });
-            submitBtn.textContent = 'Submitted';
-            submitBtn.disabled = true;
+            this.shadowRoot.querySelector('#submit-checklist-btn').textContent = 'Submitted';
+            this.shadowRoot.querySelector('#submit-checklist-btn').disabled = true;
             checkboxes.forEach(cb => cb.disabled = true);
             
             if (dashboardState.status === 'checked-in') {
                 renderDashboard();
             }
         });
+
+        // Handle delete clicks
+        checklistForm.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-btn')) {
+                const index = parseInt(e.target.dataset.index, 10);
+                this.deleteTask(index);
+            }
+        });
+        
+        // Handle checkbox changes
+        checklistForm.addEventListener('change', (e) => {
+            if(e.target.type === 'checkbox'){
+                const index = parseInt(e.target.dataset.index, 10);
+                dashboardState.checklist[index].completed = e.target.checked;
+                if (dashboardState.status === 'checked-in') {
+                    renderDashboard();
+                }
+            }
+        });
+
+        addTaskForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newTaskInput = this.shadowRoot.querySelector('#new-task-input');
+            const taskText = newTaskInput.value.trim();
+            if (taskText) {
+                this.addTask(taskText);
+                newTaskInput.value = '';
+            }
+        });
+    }
+
+    addTask(task) {
+        dashboardState.checklist.push({ task, completed: false });
+        this.render();
+        renderDashboard();
+    }
+
+    deleteTask(index) {
+        dashboardState.checklist.splice(index, 1);
+        this.render();
+        renderDashboard();
     }
 }
 
@@ -262,5 +368,62 @@ class CaringQuote extends HTMLElement {
 
 customElements.define('caring-quote', CaringQuote);
 
+class EmergencyContacts extends HTMLElement {
+    constructor() {
+        super();
+        this.attachShadow({ mode: 'open' });
+        this.shadowRoot.innerHTML = `
+            <style>
+                .contacts {
+                    margin-top: 20px;
+                    border: 2px solid var(--danger-color, #e74c3c);
+                    border-radius: 10px;
+                    padding: 20px;
+                }
+                h3 {
+                    font-size: 1.2rem;
+                    color: var(--danger-color, #e74c3c);
+                    margin-top: 0;
+                }
+                ul {
+                    list-style: none;
+                    padding: 0;
+                    margin: 0;
+                }
+                li {
+                    margin-bottom: 10px;
+                }
+                a {
+                    text-decoration: none;
+                    color: var(--primary-color, #4a90e2);
+                    font-weight: bold;
+                }
+            </style>
+            <div class="contacts">
+                <h3>Who to call for help:</h3>
+                <ul>
+                    <li>
+                        <strong>Police:</strong>
+                        <a href="tel:999">999</a>
+                    </li>
+                    <li>
+                        <strong>Ambulance / Fire:</strong>
+                        <a href="tel:995">995</a>
+                    </li>
+                    <li>
+                        <strong>Active Ageing Centre:</strong>
+                        <a href="https://aic.sg/care-services/active-ageing-centres#who" target="_blank">
+                            Find a centre near you
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        `;
+    }
+}
+customElements.define('emergency-contacts', EmergencyContacts);
 
-document.addEventListener('DOMContentLoaded', renderDashboard);
+document.addEventListener('DOMContentLoaded', () => {
+    // Initial render
+    renderDashboard();
+});
