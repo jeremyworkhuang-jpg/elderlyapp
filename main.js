@@ -4,7 +4,11 @@ const dashboardState = {
         { task: 'Medication eaten?', completed: false },
         { task: 'Doctor Appointment?', completed: false },
         { task: 'Drink water?', completed: false },
-    ]
+    ],
+    parentResponse: {
+        location: null,
+        timestamp: null
+    }
 };
 
 // Speech Recognition setup
@@ -99,6 +103,8 @@ const translations = {
         parentRequestedHelp: "Your parent has requested help.",
         voiceCommand: "Voice Command",
         listening: "Listening...",
+        parentResponseLocation: "Parent Response Location",
+        parentResponseTimestamp: "Parent Response Timestamp",
         inspirationalQuotes: [
             { quote: "Live as if you were to die tomorrow. Learn as if you were to live forever.", author: "Mahatma Gandhi" },
             { quote: "The beautiful thing about learning is that nobody can take it away from you.", author: "B.B. King" },
@@ -145,6 +151,8 @@ const translations = {
         parentRequestedHelp: "您的家长请求帮助。",
         voiceCommand: "语音指令",
         listening: "正在聆听...",
+        parentResponseLocation: "家长回应位置",
+        parentResponseTimestamp: "家长回应时间",
         inspirationalQuotes: [
             { quote: "活得好像明天就会死去。学得好像你会永远活着。", author: "圣雄甘地" },
             { quote: "学习的美妙之处在于没有人可以把它从你身边带走。", author: "B.B. King" },
@@ -190,6 +198,8 @@ const translations = {
         parentRequestedHelp: "Ibu bapa anda telah meminta bantuan.",
         voiceCommand: "Perintah Suara",
         listening: "Mendengar...",
+        parentResponseLocation: "Lokasi Respon Ibu Bapa",
+        parentResponseTimestamp: "Cap Waktu Respon Ibu Bapa",
         inspirationalQuotes: [
             { quote: "Hiduplah seolah-olah anda akan mati esok. Belajarlah seolah-olah anda akan hidup selama-lamanya.", author: "Mahatma Gandhi" },
             { quote: "Perkara yang indah tentang belajar ialah tiada siapa yang boleh mengambilnya daripada anda.", author: "B.B. King" },
@@ -236,6 +246,8 @@ const translations = {
         parentRequestedHelp: "உங்கள் பெற்றோர் உதவி கோரியுள்ளனர்.",
         voiceCommand: "குரல் கட்டளை",
         listening: "கேட்கிறது...",
+        parentResponseLocation: "பெற்றோர் பதில் இடம்",
+        parentResponseTimestamp: "பெற்றோர் பதில் நேரம்",
         inspirationalQuotes: [
             { quote: "நாளை இறந்துவிடுவீர்கள் என்பது போல் வாழுங்கள். என்றென்றும் வாழ்வீர்கள் என்பது போல் கற்றுக்கொள்ளுங்கள்.", author: "மகாத்மா காந்தி" },
             { quote: "கற்றலின் அழகான விஷயம் என்னவென்றால், அதை யாரும் உங்களிடமிருந்து பறிக்க முடியாது.", author: "பி.பி. கிங்" },
@@ -282,6 +294,8 @@ const translations = {
         parentRequestedHelp: "आपके माता-पिता ने मदद का अनुरोध किया है।",
         voiceCommand: "वॉयस कमांड",
         listening: "सुन रहा है...",
+        parentResponseLocation: "अभिभावक प्रतिक्रिया स्थान",
+        parentResponseTimestamp: "अभिभावक प्रतिक्रिया टाइमस्टैम्प",
         inspirationalQuotes: [
             { quote: "ऐसे जियो जैसे कि तुम कल मरने वाले हो। ऐसे सीखो जैसे कि तुम हमेशा के लिए जीने वाले हो।", author: "महात्मा गांधी" },
             { quote: "सीखने के बारे में खूबसूरत बात यह है कि कोई भी इसे आपसे छीन नहीं सकता।", author: "बी.बी. किंग" },
@@ -344,6 +358,11 @@ function renderDashboard() {
                 <p class="status-danger">${trans.needsAttention}</p>
                 <p>${trans.parentRequestedHelp}</p>
                 <emergency-contacts lang="${currentLanguage}"></emergency-contacts>
+                ${dashboardState.parentResponse.location && dashboardState.parentResponse.timestamp ? `
+                    <hr>
+                    <p class="parent-response-info"><strong>${trans.parentResponseLocation}:</strong> ${dashboardState.parentResponse.location}</p>
+                    <p class="parent-response-info"><strong>${trans.parentResponseTimestamp}:</strong> ${new Date(dashboardState.parentResponse.timestamp).toLocaleString(currentLanguage)}</p>
+                ` : ''}
             `;
             break;
         case 'checked-in':
@@ -357,6 +376,11 @@ function renderDashboard() {
                         `<li><strong>${item.task}</strong> ${item.completed ? `&#9989; ${trans.yes}` : `&#10060; ${trans.no}`}</li>`
                     ).join('')}
                 </ul>
+                ${dashboardState.parentResponse.location && dashboardState.parentResponse.timestamp ? `
+                    <hr>
+                    <p class="parent-response-info"><strong>${trans.parentResponseLocation}:</strong> ${dashboardState.parentResponse.location}</p>
+                    <p class="parent-response-info"><strong>${trans.parentResponseTimestamp}:</strong> ${new Date(dashboardState.parentResponse.timestamp).toLocaleString(currentLanguage)}</p>
+                ` : ''}
             `;
             break;
         default: // initial state
@@ -596,6 +620,8 @@ class DailyCheckin extends HTMLElement {
 
         checkinBtn.addEventListener('click', () => {
             dashboardState.status = 'checked-in';
+            dashboardState.parentResponse.location = "Parent's Home"; // Mock location for I'm Okay Today
+            dashboardState.parentResponse.timestamp = new Date().toISOString(); // Current timestamp
             checkinBtn.textContent = this.trans.checkedIn;
             checkinBtn.disabled = true;
             escalationBtn.disabled = true;
@@ -604,6 +630,8 @@ class DailyCheckin extends HTMLElement {
 
         escalationBtn.addEventListener('click', () => {
             dashboardState.status = 'needs-attention';
+            dashboardState.parentResponse.location = "Parent's Home"; // Mock location
+            dashboardState.parentResponse.timestamp = new Date().toISOString(); // Current timestamp
             escalationBtn.textContent = this.trans.helpSignalSent;
             checkinBtn.disabled = true;
             escalationBtn.disabled = true;

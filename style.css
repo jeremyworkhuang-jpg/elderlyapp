@@ -226,3 +226,12 @@ emergency-contacts {
     cursor: pointer;
     font-size: 1rem;
 }
+
+.parent-response-info {
+    background-color: var(--light-grey);
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    border-left: 4px solid var(--primary-color);
+}
+
