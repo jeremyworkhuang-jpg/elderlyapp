@@ -50,6 +50,31 @@ header::before {
     z-index: 1;
 }
 
+/* Language Selector */
+.language-selector-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 3;
+}
+
+#language-selector {
+    background-color: rgba(255, 255, 255, 0.9);
+    color: var(--text-color);
+    border: 1px solid var(--light-grey);
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#language-selector:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px var(--glow-color);
+}
+
 .app-title {
     position: relative;
     z-index: 2;

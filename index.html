@@ -12,29 +12,38 @@
 
       gtag('config', 'G-5JEJV7MYXB');
     </script>
-    <title>Guardian Angel by Ailoveyou</title>
+    <title data-translate-key="appTitle">Guardian Angel by Ailoveyou</title>
     <link rel="stylesheet" href="style.css">
     <script src="main.js" defer></script>
 </head>
 <body>
     <header>
+        <div class="language-selector-container">
+            <select id="language-selector">
+                <option value="en">English</option>
+                <option value="zh">中文</option>
+                <option value="ms">Bahasa Melayu</option>
+                <option value="ta">தமிழ்</option>
+                <option value="hi">हिन्दी</option>
+            </select>
+        </div>
         <h1 class="app-title">
-            <span class="main-title">Guardian Angel</span>
-            <span class="subtitle">by Ailoveyou</span>
+            <span class="main-title" data-translate-key="guardianAngel">Guardian Angel</span>
+            <span class="subtitle" data-translate-key="byAiloveyou">by Ailoveyou</span>
         </h1>
     </header>
     <main>
         <section id="parent-view">
-            <h2>Parent Portal</h2>
+            <h2 data-translate-key="parentPortal">Parent Portal</h2>
             <daily-checkin></daily-checkin>
             <div id="inspirational-quote-container">
                 <inspirational-quote></inspirational-quote>
             </div>
         </section>
         <section id="child-view">
-            <h2>Child Dashboard</h2>
+            <h2 data-translate-key="childDashboard">Child Dashboard</h2>
             <div id="dashboard-content">
-                <p>Loading dashboard...</p>
+                <p data-translate-key="loadingDashboard">Loading dashboard...</p>
             </div>
             <div id="caring-quote-container">
                 <caring-quote></caring-quote>
